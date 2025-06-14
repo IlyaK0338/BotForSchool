@@ -275,18 +275,19 @@ async def cmd_start(message: Message):
 
 @dp.message(Command("results"))
 async def cmd_results(message: Message):
-    try:
-        target_user_id = message.from_user.id
-        msg_text = "Это тестовое сообщение для пользователя!"
-        await bot.send_message(
-            chat_id=target_user_id,
-            text=msg_text
-        )
-        await message.answer(f"✅ Сообщение отправлено пользователю (ID: {target_user_id})")
-    except Exception as e:
-        error_msg = f"❌ Ошибка при отправке: {e}"
-        await message.answer(error_msg)
-        logging.error(error_msg)
+    await message.answer("Результатов пока что нет(")
+    #try:
+        #target_user_id = message.from_user.id
+        #msg_text = "Это тестовое сообщение для пользователя!"
+        #await bot.send_message(
+            #chat_id=target_user_id,
+            #text=msg_text
+        #)
+        #await message.answer(f"✅ Сообщение отправлено пользователю (ID: {target_user_id})")
+    #except Exception as e:
+        #error_msg = f"❌ Ошибка при отправке: {e}"
+        #await message.answer(error_msg)
+        #logging.error(error_msg)
 
 @dp.message(Command("reg"))
 async def cmd_reg(message: Message, state: FSMContext):
