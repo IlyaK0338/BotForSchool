@@ -276,21 +276,13 @@ async def cmd_start(message: Message):
 @dp.message(Command("results"))
 async def cmd_results(message: Message):
     try:
-        # Указываем user_id получателя (замените на реальный!)
-        target_user_id = message.from_user.id  # user_id пользователя @Ilya_k0338
-
-        # Текст сообщения
+        target_user_id = message.from_user.id
         msg_text = "Это тестовое сообщение для пользователя!"
-
-        # Отправка сообщения
         await bot.send_message(
             chat_id=target_user_id,
             text=msg_text
         )
-
-        # Подтверждение админу
         await message.answer(f"✅ Сообщение отправлено пользователю (ID: {target_user_id})")
-
     except Exception as e:
         error_msg = f"❌ Ошибка при отправке: {e}"
         await message.answer(error_msg)
