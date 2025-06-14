@@ -19,6 +19,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import asyncio
 from typing import Dict, Any, Callable, Awaitable
+from telegram.ext import CommandHandler
 
 # Настройка логирования
 logging.basicConfig(
@@ -98,6 +99,7 @@ def create_new_excel_file():
         ws["D1"] = "Дети"
         ws["E1"] = "Код"
         ws["F1"] = "Статус регистрации"
+        ws["G1"] = "ID"
         wb.save('users.xlsx')
         logger.info("Создан новый файл users.xlsx")
         return True
@@ -152,7 +154,7 @@ async def safe_load_workbook(filename):
         raise
 
 
-async def add_to_db(fio, username, role, children, state: FSMContext):
+async def add_to_db(fio, username, role, children, id, state: FSMContext):
     try:
         if await is_user_not_exist(username):
             wb = await safe_load_workbook('users.xlsx')
@@ -167,6 +169,7 @@ async def add_to_db(fio, username, role, children, state: FSMContext):
                 ws[f"D{new_row}"] = children
                 ws[f"E{new_row}"] = password
                 ws[f"F{new_row}"] = "В процессе регистрации"
+                ws[f"G{new_row}"] = id
                 await state.update_data(code=password)
 
                 wb.save('users.xlsx')
@@ -272,8 +275,26 @@ async def cmd_start(message: Message):
 
 @dp.message(Command("results"))
 async def cmd_results(message: Message):
-    await message.answer("Результаты еще не пришли(")
+    try:
+        # Указываем user_id получателя (замените на реальный!)
+        target_user_id = message.from_user.id  # user_id пользователя @Ilya_k0338
 
+        # Текст сообщения
+        msg_text = "Это тестовое сообщение для пользователя!"
+
+        # Отправка сообщения
+        await bot.send_message(
+            chat_id=target_user_id,
+            text=msg_text
+        )
+
+        # Подтверждение админу
+        await message.answer(f"✅ Сообщение отправлено пользователю (ID: {target_user_id})")
+
+    except Exception as e:
+        error_msg = f"❌ Ошибка при отправке: {e}"
+        await message.answer(error_msg)
+        logging.error(error_msg)
 
 @dp.message(Command("reg"))
 async def cmd_reg(message: Message, state: FSMContext):
@@ -338,9 +359,10 @@ async def process_name(message: Message, state: FSMContext):
     await state.update_data(fio=message.text)
     data = await state.get_data()
     username = message.from_user.username
+    userid = message.from_user.id
 
     if data['role'] == "student":
-        if await add_to_db(data["fio"], username, data['role'], data["children"], state):
+        if await add_to_db(data["fio"], username, data['role'], data["children"], userid, state):
             await message.answer("Введите код, который вам скажет волонтер")
             await state.set_state(Form.waiting_for_code_user)
     else:
@@ -352,9 +374,10 @@ async def process_name(message: Message, state: FSMContext):
 @dp.message(Form.waiting_for_baby)
 async def get_baby(message: Message, state: FSMContext):
     username = message.from_user.username
+    userid = message.from_user.id
     await state.update_data(children=message.text)
     data = await state.get_data()
-    if await add_to_db(data["fio"], username, data['role'], data["children"], state):
+    if await add_to_db(data["fio"], username, data['role'], data["children"], userid, state):
         await message.answer("Теперь введите код, который вам скажет волонтер:")
         await state.set_state(Form.waiting_for_code_user)
 
