@@ -273,21 +273,26 @@ async def cmd_start(message: Message):
         "/reg - регистрация\n")
 
 
+@dp.message(Command("give_reg"))
+async def give_reg(message: Message):
+    username = message.from_user.username
+    if username == "Ilya_k0338":
+        wb = await safe_load_workbook('users.xlsx')
+        ws = wb.active
+        for row in ws.iter_rows(min_row=2):
+            target_user_id = str(row[6].value).strip().lower()
+            msg_text = "Это тестовое сообщение для пользователя!"
+            await bot.send_message(
+                chat_id=target_user_id,
+                text=msg_text
+            )
+            await message.answer(f"✅ Сообщение отправлено пользователю (username: "
+                                 f"{str(row[1].value).strip().lower()})")
+
+
 @dp.message(Command("results"))
 async def cmd_results(message: Message):
     await message.answer("Результатов пока что нет(")
-    #try:
-        #target_user_id = message.from_user.id
-        #msg_text = "Это тестовое сообщение для пользователя!"
-        #await bot.send_message(
-            #chat_id=target_user_id,
-            #text=msg_text
-        #)
-        #await message.answer(f"✅ Сообщение отправлено пользователю (ID: {target_user_id})")
-    #except Exception as e:
-        #error_msg = f"❌ Ошибка при отправке: {e}"
-        #await message.answer(error_msg)
-        #logging.error(error_msg)
 
 @dp.message(Command("reg"))
 async def cmd_reg(message: Message, state: FSMContext):
